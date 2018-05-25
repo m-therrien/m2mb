@@ -91,18 +91,19 @@ async def format_mail(loop, msg, to_text=True, ignore_tables=True):
 
     body = None
     for part in msg.walk():
+        charset = part.get_content_charset()
         if to_text and part.get_content_type() == "text/html":
-            body = h.handle(quopri.decodestring(part.get_payload()).decode())
+            body = h.handle(quopri.decodestring(part.get_payload()).decode(charset))
             break
         elif part.get_content_type() == "text/plain":
-            body = quopri.decodestring(part.get_payload())
+            body = quopri.decodestring(part.get_payload()).decode(charset)
             break
 
     if not body:
         log.error("Could not find text body mail")
         body = quopri.decodestring(msg.as_string())
 
-    text = f"### {msg['Subject']} \n {body}"
+    text = f"__ {msg['Subject']} __\n {body}"
     return text
 
 
